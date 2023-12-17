@@ -1,0 +1,29 @@
+services:
+  collect-records:
+    command:
+      - router-data-collection
+      - --flagfile=data/collect-records-flags.txt
+    image: router-data-collection
+    restart: unless-stopped
+    init: true
+    mem_limit: 128M
+    volumes:
+      - prod-data:/app/data
+
+  write-records:
+    command:
+      - line-protocol-cache-consumer
+      - --flagfile=data/line-protocol-cache-consumer-flags.txt
+    image: router-data-collection
+    init: true
+    mem_limit: 128M
+    restart: unless-stopped
+    volumes:
+      - prod-data:/app/data
+
+# docker-compose version 1.17.1 on Jetson Nano.
+# https://docs.docker.com/compose/compose-file/compose-versioning/#version-23
+version: '2.3'
+
+volumes:
+  prod-data:

@@ -51,9 +51,18 @@ class Router:
       )
       assert self.control_master.stderr is not None
 
+      stderr_lines: list[str] = []
       line = ''
       while 'new mux listener' not in line and not self.control_master.stderr.at_eof():
         line = (await self.control_master.stderr.readline()).decode()
+        stderr_lines.append(line.strip())
+
+      if self.control_master.stderr.at_eof():
+        e = ValueError('SSH control master exited unexpectedly.')
+        e.add_note('SSH error messages are as follows:')
+        for line in stderr_lines:
+          e.add_note('  - ' + line)
+        raise e
 
       self.cat_splitter_line = (await self.cat(self.CAT_SPLITTER_FILE))[0]
       self.cat_splitter_line += '\n'
